@@ -1,0 +1,170 @@
+name: Compile
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repo
+        uses: actions/checkout@v4
+
+      - name: Configurem python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalem paquets
+        run: pip install pyinstaller
+
+      - name: Empaquetem el executable
+        run: pyinstaller --onefile comprova_desplegaments.py
+
+      - name: Organitzar ftxers
+        run: |
+          mkdir -p dist-linux
+          cp dist/comprova_desplegaments dist-linux/
+          cp comprova_desplegaments.spec dist-linux/
+
+      - name: Guardem executable Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: executable-Linux
+          path: dist-linux/
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout del repo
+        uses: actions/checkout@v4
+
+      - name: Configurem python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalem paquets
+        run: pip install pyinstaller
+
+      - name: Empaquetem el executable
+        run: pyinstaller --onefile comprova_desplegaments.py
+
+      - name: Organitzar fitxers
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist-win -Force
+          Copy-Item dist/comprova_desplegaments.exe dist-win/
+          Copy-Item comprova_desplegaments.spec dist-win/
+          #Con cmd:
+          #if not exist dist-win mkdir dist-win
+          #copy dist\comprova_desplegaments.exe dist-win\
+          #copy comprova_desplegaments.spec dist-win\
+
+      - name: Guardem executable Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: executable-Windows
+          path: dist-win/
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout del repo
+        uses: actions/checkout@v4
+
+      - name: Configurem python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalem paquets
+        run: pip install pyinstaller
+
+      - name: Empaquetem el executable
+        run: pyinstaller --onefile comprova_desplegaments.py
+
+      - name: Organitzar fitxers
+        run: |
+          mkdir -p dist-mac
+          cp dist/comprova_desplegaments dist-mac/
+          cp comprova_desplegaments.spec dist-mac/
+
+      - name: Guardem executable macOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: executable-macOS
+          path: dist-mac/
+
+  test-linux:
+    needs: build-linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descarregar executable
+        uses: actions/download-artifact@v4
+        with:
+          name: executable-Linux
+          path: dist-linux
+
+      - name: Donar permissos de execucio
+        run: chmod +x dist-linux/comprova_desplegaments
+
+      - name: Comprovar funcionament
+        id: execucio
+        continue-on-error: true
+        run: ./dist-linux/comprova_desplegaments https://example.com
+
+      - name: Mostrar error si falla el test
+        if: ${{steps.execucio.outcome=='failure'}}
+        run: echo "Ha fallat el test de Linux"
+
+  test-windows:
+    needs: build-windows
+    runs-on: windows-latest
+
+    #No fa falta permisos en windows
+    steps:
+      - name: Descarregar executable
+        uses: actions/download-artifact@v4
+        with:
+          name: executable-Windows
+          path: dist-win
+
+      - name: Comprovar funcionament
+        id: execucio
+        continue-on-error: true
+        shell: pwsh #especificas el shell: cmd o pwsh(powershell)
+        run: .\dist-win\comprova_desplegaments.exe https://example.com #cmd -> dist-win\comprova_desplegaments.exe url | opcional -> .\
+
+      - name: Mostrar error si falla el test
+        if: ${{steps.execucio.outcome=='failure'}}
+        run: echo "Ha fallat el test de Windows"
+
+
+  test-macos:
+    needs: build-macos
+    runs-on: macos-latest
+
+    steps:
+      - name: Descarregar executable
+        uses: actions/download-artifact@v4
+        with:
+          name: executable-macOS
+          path: dist-mac
+
+      - name: Donar permissos de execucio
+        run: chmod +x dist-mac/comprova_desplegaments
+
+      - name: Comprovar funcionament
+        id: execucio
+        continue-on-error: true
+        run: |
+          ./dist-mac/comprova_desplegaments https://example.com
+          exit 1
+
+      - name: Mostrar error si falla el test
+        if: ${{steps.execucio.outcome=='failure'}}
+        run: echo "Ha fallat el test de macOS"
+
