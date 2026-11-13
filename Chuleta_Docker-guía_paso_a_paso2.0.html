@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chuleta Docker - guía paso a paso</title>
+<style>
+:root{--bg:#FBF8F0;--tx:#1d1d1d;--pri:#0d3b7a;--card:#fff;--bd:#d4cdb8;--box:#e8f1fb;--code:#f1f1f1;--cbd:#ccc;--ok:#d9f2d9;--okt:#2a7a2a;--ori:#ffe9b3;--orit:#8a6000;--warn:#fde4e4;--tip:#e3f4e3;--mut:#555;--head:#f9f7f2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171c;--tx:#e8e8e8;--pri:#8ab4f8;--card:#1f2229;--bd:#3a3f4a;--box:#1c2b40;--code:#14161a;--cbd:#3a3f4a;--ok:#1e3a1e;--okt:#8fd68f;--ori:#4a3a10;--orit:#f0c767;--warn:#3d1f1f;--tip:#1c3320;--mut:#aaa;--head:#1a1d23}}
+:root[data-theme="dark"]{--bg:#15171c;--tx:#e8e8e8;--pri:#8ab4f8;--card:#1f2229;--bd:#3a3f4a;--box:#1c2b40;--code:#14161a;--cbd:#3a3f4a;--ok:#1e3a1e;--okt:#8fd68f;--ori:#4a3a10;--orit:#f0c767;--warn:#3d1f1f;--tip:#1c3320;--mut:#aaa;--head:#1a1d23}
+body{font-family:Verdana,Arial,sans-serif;font-size:18px;line-height:1.75;letter-spacing:.02em;background:var(--bg);color:var(--tx);max-width:920px;margin:0 auto;padding:10px 14px 60px}
+h1{font-size:25px;margin:14px 0}
+#sc{background:var(--card);border:2px solid var(--pri);border-radius:14px;padding:20px 22px;margin:0 0 18px}
+#sh{text-align:center;margin-bottom:14px}#sh h2{color:var(--pri);font-size:20px;margin:0 0 4px}#sh p{color:var(--mut);font-size:15px;margin:0}
+#iw{display:flex;align-items:center;border:3px solid var(--pri);border-radius:30px;padding:6px 14px;background:var(--card);gap:8px}
+#sq{flex:1;min-width:0;border:none;outline:none;font-size:17px;font-family:inherit;background:transparent;color:var(--tx)}
+#sx{background:none;border:none;cursor:pointer;font-size:18px;color:var(--mut)}
+#sg{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sl{font-size:13px;color:var(--mut)}
+.sb{font-size:15px;padding:3px 10px;border:1.5px solid var(--pri);border-radius:14px;background:var(--box);cursor:pointer;color:var(--pri)}.sb:hover{background:var(--pri);color:var(--bg)}
+#res{margin-top:14px}
+.rc{border:2px solid var(--bd);border-radius:10px;margin:8px 0;overflow:hidden}
+.rh{padding:12px 14px;display:flex;align-items:flex-start;gap:10px;background:var(--head);cursor:pointer}
+.sn{background:var(--pri);color:var(--bg);border-radius:50%;min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold}
+.ri{flex:1}.rt{font-weight:bold;font-size:16px;color:var(--pri)}.rm{font-size:14px;color:var(--mut)}
+.rb{display:none;border-top:2px solid var(--bd);padding:4px 16px 14px}.rb.open{display:block}
+.no{text-align:center;padding:16px;color:var(--mut)}
+.bg{display:inline-block;font-size:13px;padding:2px 10px;border-radius:12px;margin:2px 0 6px}.ok{background:var(--ok);color:var(--okt)}.ori{background:var(--ori);color:var(--orit)}
+details{background:var(--card);border:2px solid var(--bd);border-radius:10px;margin:12px 0;padding:6px 14px}summary{cursor:pointer;font-size:19px;font-weight:bold;padding:6px 0}
+.box{background:var(--box);border-radius:8px;padding:8px 14px;margin:8px 0}.tip{background:var(--tip);border-radius:8px;padding:6px 14px;margin:8px 0}.warn{background:var(--warn);border-radius:8px;padding:6px 14px 6px 30px}
+.st{font-size:17px;font-weight:bold;color:var(--pri);margin:18px 0 6px;border-bottom:2px solid var(--bd)}
+.paso{border-left:6px solid var(--pri);padding:2px 0 2px 14px;margin:16px 0}.paso b.n{background:var(--pri);color:var(--bg);border-radius:50%;padding:1px 9px;margin-right:6px}
+.cb{margin:8px 0}pre{background:var(--code);border:1px solid var(--cbd);border-left:6px solid var(--pri);border-radius:6px;padding:10px;margin:0;font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-x:auto;font-family:Consolas,monospace}
+button.cp{margin:4px 6px 0 0;font-size:15px;padding:5px 12px;border:2px solid var(--pri);background:var(--card);color:var(--pri);border-radius:6px;cursor:pointer}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:16px}td,th{border:1px solid var(--cbd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--box)}
+a{color:var(--pri)}ul,ol{padding-left:24px}li{margin:5px 0}
+details{scroll-margin-top:calc(150px + env(safe-area-inset-top,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+#top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;z-index:9;border-bottom:3px solid var(--pri)}
+#q{width:100%;box-sizing:border-box;font-size:19px;font-family:inherit;padding:10px;border:3px solid var(--pri);border-radius:8px;background:var(--card);color:var(--tx)}
+.chip{font-size:15px;padding:5px 12px;margin:6px 6px 0 0;border:2px solid var(--pri);background:var(--card);color:var(--pri);border-radius:18px;cursor:pointer}.chip.on{background:var(--pri);color:var(--bg)}
+li.hit{background:#fff3a8;color:#1d1d1d;border-radius:6px}li.hit a{color:#0d3b7a}
+.hide{display:none}#cnt{font-size:14px;color:var(--mut);margin-top:6px}
+</style></head><body>
+<div id="sc">
+<div id="sh"><h2>🔍 Buscador Inteligente Docker</h2><p>Escribe el enunciado como lo haría el profesor</p></div>
+<div id="iw"><span>🔎</span><input id="sq" type="text" placeholder="Ej: imagen a partir de nginx con nano · publicar en el puerto 8081 · subir a Docker Hub · docker-compose..." autocomplete="off"><button id="sx" type="button" title="Borrar búsqueda">✕</button></div>
+<div id="sg"></div>
+<div id="res"></div>
+</div>
+<h1>Chuleta Docker: te guío desde el enunciado hasta el comando</h1>
+<div class="box"><b>Método para CUALQUIER ejercicio de Docker (5 preguntas):</b><ol>
+<li><b>¿Qué imagen base y con qué tag exacto?</b> FROM nginx:1.27-alpine, httpd:2.4.62, python:3.15…</li>
+<li><b>¿Qué instalo o copio?</b> RUN con el gestor de paquetes (apk en Alpine, apt-get en Debian) y COPY a la ruta del servidor.</li>
+<li><b>¿Cómo se llaman la imagen y el contenedor?</b> &lt;usuari&gt;/nom:tag y --name tal cual los pide el enunciado.</li>
+<li><b>¿Qué puerto publico?</b> -p PUERTO_MÁQUINA:80 (el interno es siempre 80).</li>
+<li><b>¿Cómo compruebo y qué entrego?</b> curl o docker exec; después docker push y GitHub.</li></ol>
+<b>Dos buscadores:</b> arriba, el Buscador Inteligente (escribe el enunciado entero). Justo debajo, el buscador de teoría: escribe una palabra suelta (volumen, COPY, apk, push…), se filtran los temas, se abren y se marca <mark>en amarillo</mark> la frase que coincide.</div>
+<div class="box" id="cent"></div>
+<div id="top"><input id="q" placeholder="Busca en la teoría: docker run · volumen · COPY · CMD · apk · push…" autocomplete="off"><div id="chips"></div><div id="cnt"></div></div>
+<details id="indice"><summary>📚 Índice (pulsa un tema)</summary><div id="idx"></div></details>
+<details id="tabla"><summary>🧭 ¿Qué hago si el enunciado me pide…?</summary><div class="tw"><table id="tb"><tr><th>Si el enunciado dice…</th><th>Uso…</th><th>Guía</th></tr></table></div></details>
+<details id="difs"><summary>⚖️ Cosas parecidas: ¿cuál uso?</summary><div class="tw"><table>
+<tr><th>Opción</th><th>Diferencia</th></tr>
+<tr><td>VM / Docker: aislamiento y SO</td><td><b>VM</b>: aislamiento a nivel de hardware, un SO independiente cada una. <b>Docker</b>: aislamiento a nivel de SO, los contenedores comparten SO.</td></tr>
+<tr><td>VM / Docker: arranque y tamaño</td><td><b>VM</b>: minutos y pocos GB. <b>Docker</b>: segundos y KB/MB.</td></tr>
+<tr><td>VM / Docker: crear y mover</td><td><b>VM</b>: crearla lleva más tiempo y se puede mover a otro host. <b>Docker</b>: se crea en segundos y se destruye y recrea en vez de moverse.</td></tr>
+<tr><td>VM / Docker: recursos y disponibilidad</td><td><b>VM</b>: más recursos; difícil encontrarlas ya preparadas. <b>Docker</b>: menos recursos; contenedores prediseñados fácilmente disponibles.</td></tr>
+<tr><td>-t / -y</td><td><b>-t</b> etiqueta la imagen en docker build. <b>-y</b> es de apt-get install -y: no existe en docker build.</td></tr>
+<tr><td>docker tag / docker build</td><td><b>tag</b> añade otro nombre a una imagen ya hecha (arregla el usuario mal). <b>build</b> la reconstruye.</td></tr>
+<tr><td>--no-cache / docker builder prune</td><td><b>--no-cache</b> reconstruye todas las capas (error «parent snapshot not found»). <b>builder prune</b> limpia la caché de build (fuera de los apuntes).</td></tr>
+<tr><td>CMD / ENTRYPOINT</td><td><b>ENTRYPOINT</b> se ejecuta primero; <b>CMD</b> da los parámetros por defecto (y solo cuenta el último CMD).</td></tr>
+<tr><td>COPY / ADD</td><td><b>COPY</b> copia del contexto. <b>ADD</b> igual, pero admite URL: se recomienda COPY.</td></tr>
+<tr><td>RUN / CMD</td><td><b>RUN</b> se ejecuta al construir la imagen. <b>CMD</b> al arrancar el contenedor.</td></tr>
+<tr><td>EXPOSE / -p</td><td><b>EXPOSE</b> solo documenta el puerto. <b>-p host:contenedor</b> lo publica de verdad.</td></tr>
+<tr><td>ARG / ENV</td><td><b>ARG</b> existe al construir (--build-arg). <b>ENV</b> queda en la imagen y en el contenedor (-e).</td></tr>
+<tr><td>docker rm / docker rmi</td><td><b>rm</b> borra contenedores. <b>rmi</b> borra imágenes (sin contenedores que las usen).</td></tr>
+<tr><td>docker exec / docker attach</td><td><b>exec</b> ejecuta un comando nuevo dentro. <b>attach</b> se engancha al proceso principal.</td></tr>
+<tr><td>docker images / docker ps</td><td><b>images</b> lista imágenes. <b>ps</b> lista contenedores (-a incluye los parados).</td></tr>
+<tr><td>docker build / docker commit</td><td><b>build</b> crea la imagen desde un Dockerfile. <b>commit</b> la crea desde un contenedor.</td></tr>
+<tr><td>Volumen anónimo / con nombre / montado</td><td><b>Anónimo</b>: -v /data. <b>Con nombre</b>: -v vol1:/data. <b>Montado</b>: -v /ruta/host:/ruta/contenedor.</td></tr>
+<tr><td>Alpine / Debian</td><td><b>Alpine</b>: apk add --no-cache; imagen pequeña. <b>Debian</b>: apt-get update + install -y; más pesada.</td></tr>
+<tr><td>-p 8081:80</td><td>Izquierda = puerto de tu máquina. Derecha = puerto del contenedor (80 en nginx/httpd).</td></tr></table></div></details>
+<div id="lista"></div>
+<details id="errs"><summary>⚠️ Errores frecuentes (todos juntos)</summary><div id="eb"></div></details>
+<script>
+const P=[],CD=[];
+const e=(id,u,ti,t,k,p,r,n,h,s,v,er)=>P.push({id,u,ti,t,k,p,r,n,h,s,v,er});
+// ===== TEMAS Y EJERCICIOS =====
+e("examen","Examen","t","Cómo será el examen y checklist para no perder puntos","examen formato checklist nombres exactos nombre imagen contenedor puerto tag usuario errores entrega pasos orden practica carpeta",
+"Saber **qué te pueden pedir** y no perder puntos por un nombre mal escrito. El formato sale del examen de Git y del PDF de ejercicios de imágenes: es una **deducción**, no lo dice ningún documento.",
+[["crea una imagen a partir de X:tag que sirva tu index.html","FROM + RUN (instalar paquete) + COPY index.html"],["publícala en el puerto 80XX de la máquina","docker run -d --name webN -p 80XX:80"],["comprueba que el paquete está instalado","docker exec contenedor paquete --version"],["comprueba que sirve tu página","curl http://localhost:PUERTO"],["súbela a Docker Hub","docker login + docker push"],["entrégalo en GitHub","git init / add / commit / remote / push"]],
+[["Nombres exactos","Imagen base con su tag, imagen <usuari>/nom:tag, contenedor y puerto: tal cual los pide el enunciado. Un nombre distinto puede dejar el apartado a cero."],["Puerto interno","Siempre 80 en nginx y httpd: -p 8081:80, nunca 8081:8081."],["Gestor de paquetes","Alpine: apk add --no-cache · Debian: apt-get update && apt-get install -y"],["Rutas","nginx: /usr/share/nginx/html/ · Apache: /usr/local/apache2/htdocs/"]],
+`~/docker-imatges/\n├── ex1/  (Dockerfile + index.html)\n├── ex2/\n├── ex3/\n└── ex4/`,
+[["Orden de trabajo en cada ejercicio",`docker build -t <usuari>/nom:tag .\ndocker run -d --name webN -p PUERTO:80 <usuari>/nom:tag\ncurl http://localhost:PUERTO\ndocker exec webN paquete --version`,"Primero el Dockerfile; después estas cuatro órdenes. El punto final del build es el contexto. Espera un par de segundos tras el run antes del curl; al final, docker ps debe mostrar tu imagen y el puerto."]],
+[],
+[["COPY sin destino","COPY necesita origen y destino: COPY index.html /ruta/destino/."],["docker build sin el punto final","Falta el contexto: docker build -t usuario/nom:tag ."],["Typos en docker","Relee docker, run, build y exec antes de dar a Enter."],["Tag con dos puntos (26:04)","Un solo : entre nombre y tag, y la versión lleva punto: ubuntu:26.04."],["Espacio tras -e NOM=","Va pegado: -e NOM=valor."],["TU_USUARIO sin sustituir","Cambia el marcador por tu usuario real de Docker Hub."],["Ruta de Apache en una imagen nginx","nginx: /usr/share/nginx/html/ · httpd: /usr/local/apache2/htdocs/."],["docker build -y","-y no existe en build: la etiqueta es -t."],["Usuario mal escrito en la imagen (alvaro/ en vez de alvarovano/)","Se corrige con docker tag, sin reconstruir (mira «Tus fallos reales»)."],["curl justo después del run","Espera 2-3 segundos y repite: nginx aún no escuchaba."],["Build con error de caché","docker build --no-cache."]]);
+
+e("fallos","Examen","t","Tus fallos reales y cómo arreglarlos (build, usuario mal, curl)","fallos errores build -y no cache parent snapshot exporting to image usuario mal nombre imagen docker tag rmi curl connection reset by peer recv failure rm -f volver a lanzar docker ps image ports puerto ocupado comprobacion",
+"Los fallos que **ya te han salido** en las prácticas y que pueden repetirse en el examen: reconócelos por el mensaje y arréglalos sin perder tiempo.",
+[["el build termina en ERROR exporting to image / parent snapshot ... not found","docker build --no-cache -t ... ."],["docker build -y ...","-y no existe en build: la etiqueta es -t"],["la imagen tiene el usuario mal (alvaro/ en vez de alvarovano/)","docker tag + rm -f + rmi del nombre malo"],["curl: (56) Recv failure: Connection reset by peer","espera 2-3 s y repite solo el curl"],["comprueba que el contenedor usa la imagen correcta","docker ps → columnas IMAGE y PORTS"]],
+[["Error de caché","Una capa marcada CACHED ya no está en disco. No es culpa del Dockerfile: usa --no-cache. Si sigue, docker builder prune (fuera de los apuntes)."],["-y frente a -t","-y es de apt-get install -y (responder «sí»). En docker build la etiqueta es -t nombre:tag."],["Nombre de la imagen","Debe llevar tu usuario EXACTO delante (para el enunciado y para el push). Se corrige sin reconstruir con docker tag."],["Espera tras el run","nginx tarda un instante en escuchar: si encadenas run y curl en el mismo segundo, curl falla. Lanza el curl después."],["Comprobación final","docker ps: IMAGE = <usuari>/nombre:tag y PORTS = 0.0.0.0:8081->80/tcp."]],
+"",
+[["Build con error de caché",`docker build --no-cache -t <usuari>/web-nginx:1.0 .\ndocker run -d --name web1 -p 8081:80 <usuari>/web-nginx:1.0\ncurl http://localhost:8081\ndocker exec web1 nano --version`,"--no-cache reconstruye todas las capas."],["Corregir una imagen con el usuario mal",`docker images\ndocker rm -f web2\ndocker tag alvaro/web-apache:1.0 <usuari>/web-apache:1.0\ndocker rmi alvaro/web-apache:1.0\ndocker run -d --name web2 -p 8082:80 <usuari>/web-apache:1.0\ndocker ps`,"images confirma que existe la imagen mal nombrada. rm -f va antes porque no se borra una imagen en uso. tag pone el nombre correcto (y reemplaza a otra con ese mismo nombre). rmi borra el nombre malo. En ps, IMAGE debe mostrar el nombre bueno."],["curl falla justo después del run",`docker run -d --name web1 -p 8081:80 <usuari>/web-nginx:1.0\ncurl http://localhost:8081`,"Si da «Connection reset by peer», espera un par de segundos y repite solo el curl. Si persiste: docker ps y docker logs web1."]],
+[["Diagnóstico rápido si algo no responde",`docker ps -a\ndocker logs web1\ndocker images`]],
+[["Port is already allocated (típico, no es de tus apuntes)","Otro contenedor ya usa ese puerto: docker ps y docker rm -f del viejo."],["curl: (7) Failed to connect (típico)","El contenedor está parado o el -p está mal: docker ps y revisa host:80."],["COPY failed: file not found in build context (típico)","index.html no está en la carpeta del ejercicio: el contexto es la carpeta donde haces el build."],["Dejar <usuari> o TU_USUARIO sin sustituir","Cámbialo por tu usuario real antes de ejecutar."]]);
+
+e("vm","Conceptos","t","Virtualización, contenedor vs máquina virtual, arquitectura y términos","contenedor maquina virtual vm hipervisor kernel arquitectura cliente servidor daemon imagen etiqueta registro engine dockerfile volumen instalacion hello-world ventajas inconvenientes desventajas tabla comparativa dotcloud go namespaces cgroups gpg pasos virtualizacion",
+"Explicar **qué es la virtualización**, en qué se diferencia un contenedor de una VM y cómo funciona Docker por dentro. Es la teoría típica de examen.",
+[["diferencia entre contenedor y máquina virtual","VM = SO completo + hipervisor · contenedor = comparte el kernel del host"],["por qué arranca en segundos","no lleva SO propio"],["qué hace el hipervisor","expone el hardware para que otros SO lo usen (Hyper-V, VirtualBox, VMware)"],["arquitectura de Docker","cliente → daemon (servidor)"],["qué es Docker Engine / Dockerfile / volumen","servidor+API+CLI / receta de la imagen / datos persistentes"],["qué pasa con docker run hello-world","cliente → daemon → descarga de Docker Hub → crea el contenedor → salida al cliente"]],
+[["Virtualización","Emulación por software de una infraestructura de servidores real, con un entorno de ejecución idéntico al físico. Sirve para tener recursos «elásticos»."],["Máquina virtual","SO completo aislado sobre otro SO, con hipervisor. Ventajas: un recurso físico hace el trabajo de muchos, se administra desde el hipervisor y está aislada. Inconvenientes: consume muchos recursos (copia del SO y del hardware), reubicarla es complicado y rara vez usa todo."],["Contenedor","Comparte los recursos del SO host. Ventajas: instalación sencilla, independiente de la plataforma, pérdidas mínimas y aplicaciones aisladas entre sí. Desventajas: menos herméticos y con menos seguridad y estabilidad que una VM, porque comparten kernel."],["Docker","Open source de 2013 (dotCloud, luego Docker Inc.), escrito en Go. Usa espacios de nombres y grupos de control del kernel de Linux."],["Cliente / daemon","El cliente acepta tus comandos y habla con el daemon, que crea, ejecuta y distribuye contenedores. Pueden estar en máquinas distintas."],["Términos","Docker Engine = servidor + API + CLI; Dockerfile = receta de la imagen; volumen = datos que sobreviven al contenedor. Los apuntes no definen formalmente imagen, etiqueta ni registro."],["Paquetes de la instalación","apt-transport-https: transferir por https · ca-certificates: verificar certificados · curl: transferir datos · software-properties-common: administrar repositorios. La clave GPG verifica que el software es auténtico."],["Debes saber explicar","Por qué un contenedor arranca en segundos y una VM en minutos, qué hace el hipervisor, cliente frente a daemon y los 4 pasos de hello-world."]],
+"",
+[["Comprobar la instalación",`docker run hello-world`,"Por detrás: 1) el cliente conecta con el daemon; 2) el daemon descarga hello-world de Docker Hub; 3) crea un contenedor de esa imagen y ejecuta el proceso; 4) redirige la salida al cliente, que la muestra en el terminal."],["Flujo de trabajo",`Dockerfile → docker build → imagen → docker run → contenedor\nimagen → docker push → registro (Docker Hub)`,"Construyes una imagen desde un Dockerfile u obtienes una de un registro; con ella generas un contenedor, que se arranca y para como cualquier proceso; si quieres compartirla, la publicas."]],
+[["Instalación en Ubuntu (apuntes)",`sudo apt-get update\nsudo apt-get install apt-transport-https ca-certificates curl software-properties-common\ncurl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -\nsudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"\nsudo apt-get update\nsudo apt-get install docker-ce`]],
+[["Contenedor = VM","El contenedor NO lleva SO propio: comparte el kernel del host."],["Seguridad","Al compartir kernel, un contenedor está menos aislado que una VM."]]);
+
+e("imgs","Imágenes","t","Imágenes: search, pull, images, inspect, history, rmi y commit","imagen imagenes search pull images image ls inspect history rmi commit docker hub descargar listar borrar tag version filtro",
+"Gestionar las **imágenes** locales: buscarlas, descargarlas, listarlas, inspeccionarlas, borrarlas o crear una desde un contenedor.",
+[["buscar una imagen en Docker Hub","docker search"],["descargar la imagen X versión Y","docker pull X:Y"],["listar las imágenes","docker images / docker image ls"],["ver las capas","docker image history"],["ver el detalle completo","docker image inspect"],["borrar una imagen","docker rmi / docker image rm"],["guardar un contenedor como imagen","docker commit CONTENEDOR repo:tag"]],
+[["nombre:tag","Sin tag se usa latest. Para fijar versión: nginx:1.27-alpine."],["Opciones de ls","-a todas · -q solo IDs · -f filtrar."],["rmi","Admite nombre o ID, y varias imágenes a la vez. Falla si un contenedor la usa."],["commit","Guarda el estado actual del contenedor con los cambios hechos a mano."]],
+"",
+[["Buscar y descargar",`docker search nginx\ndocker pull nginx:1.27-alpine`,"Siempre con el tag que pida el enunciado."],["Listar e inspeccionar",`docker images\ndocker image ls -q\ndocker image inspect nginx:1.27-alpine\ndocker image history nginx:1.27-alpine`,"inspect = detalle; history = capas."],["Borrar",`docker rmi nginx:1.27-alpine\ndocker image rm nginx:1.27-alpine`,"rmi e image rm hacen lo mismo. Antes elimina los contenedores que la usen."],["Imagen desde un contenedor",`docker commit web1 usuario/web:v1`,"Sintaxis: docker commit CONTENEDOR repo:tag."]],
+[],
+[["docker commit al revés","En el repaso de los apuntes aparece «nombre_imagen nombre_contenedor»: está al revés. Lo correcto es CONTENEDOR primero."],["rmi falla","Hay un contenedor (aunque esté parado) que usa la imagen: docker rm antes."],["Tag mal escrito","nombre:tag lleva un solo : (ubuntu:26.04)."]]);
+
+e("run","Contenedores","t","docker run: nombre, segundo plano, puertos, variables y comando","docker run name rm detached interactivo it puerto publicar p variable entorno e comando arrancar contenedor segundo plano -d --name",
+"Arrancar un contenedor con **docker run** y las opciones que pida el enunciado.",
+[["con el nombre web1","--name web1"],["en segundo plano","-d"],["interactivo / con terminal","-it"],["publicado en el puerto 8081 de la máquina","-p 8081:80"],["que se borre al pararlo","--rm"],["con la variable X=valor","-e X=valor"],["ejecutar un comando al arrancar","comando al final del run"]],
+[["Sintaxis","docker run [OPCIONES] IMAGEN[:TAG] [COMANDO] [ARGS]"],["-p host:contenedor","Izquierda = puerto de TU máquina; derecha = el del contenedor. Admite IP (127.0.0.1:6379:6379) y rangos."],["-P (mayúscula)","Publica todos los puertos expuestos en puertos aleatorios."],["Comando","Siempre va el último, incluso detrás del nombre de la imagen."]],
+"",
+[["Servidor web en segundo plano",`docker run -d --name web1 -p 8081:80 <usuari>/web-nginx:1.0`,"8081 = tu máquina; 80 = contenedor."],["Interactivo y temporal",`docker run -it --rm ubuntu:22.04 bash`,"-it para interactuar; --rm lo borra al salir."],["Variables de entorno",`docker run -d -e VAR1=valor1 -e VAR2=valor2 imagen`,"Un -e por variable, sin espacio tras el =."],["Comando al arrancar",`docker run --rm ubuntu:22.04 ls /`,"Sustituye el comando por defecto de la imagen."]],
+[["Redis en un puerto de tu máquina",`docker run -d -p 6379:6379 redis`],["Solo accesible desde tu máquina",`docker run -d -p 127.0.0.1:6379:6379 redis`]],
+[["Las diapositivas dicen -n y -rm","Lo correcto es --name y --rm (doble guion). El resto de apuntes usa --name."],["-p 8081:8081","El puerto interno de nginx/httpd es 80: -p 8081:80."],["The container name is already in use","Ya existe ese nombre: docker rm -f web1 y vuelve a lanzar."],["Port is already allocated","Otro contenedor ya usa ese puerto: docker ps y docker rm -f del viejo."],["curl falla justo después del run","Espera 2-3 segundos: nginx aún no escuchaba."]]);
+
+e("ctr","Contenedores","t","Gestionar contenedores: ps, start/stop, logs, exec, attach y rm","ps start stop restart kill pause unpause logs inspect rename rm exec attach parar borrar contenedor estado comprobar paquete dentro",
+"**Ver y controlar** los contenedores: listar, cambiar su estado, leer logs, ejecutar algo dentro y borrarlos.",
+[["ver los contenedores en marcha / todos","docker ps / docker ps -a"],["parar / arrancar / reiniciar","docker stop / start / restart"],["ver la salida","docker logs"],["comprobar que el paquete está instalado","docker exec contenedor comando"],["borrar un contenedor","docker rm / rm -f"],["cambiarle el nombre","docker rename"]],
+[["start|stop|restart|kill|pause|unpause","Cambian el estado del contenedor."],["rm / rm -f","rm solo borra si está parado; -f lo borra sea cual sea su estado."],["exec","Ejecuta UN comando en un contenedor en marcha."],["attach","Te engancha al proceso principal; sobre todo para depurar."],["docker ps como comprobación","Columna IMAGE = <usuari>/nombre:tag y PORTS = 0.0.0.0:8081->80/tcp."],["Nombre o ID","Se puede borrar por nombre, pero es mejor por ID completo o parcial (los primeros caracteres que salen en docker ps)."]],
+"",
+[["Listar",`docker ps\ndocker ps -a`,"-a incluye los parados."],["Cambiar estado",`docker stop web1\ndocker start web1\ndocker restart web1`,"También kill, pause y unpause."],["Logs e inspección",`docker logs web1\ndocker inspect web1`,"logs = salida; inspect = toda la información."],["Ejecutar dentro",`docker exec web1 nano --version\ndocker exec -it web1 sh`,"El primero es la comprobación del examen; el segundo abre una shell (sh en Alpine, bash en Debian)."],["Renombrar y borrar",`docker rename web1 web1b\ndocker rm web1b\ndocker rm -f web1b`,"rm -f si sigue en marcha."]],
+[],
+[["rm no borra","El contenedor está en marcha: páralo o usa rm -f."],["exec dice que no está corriendo","El contenedor está parado: docker start primero."]]);
+
+e("vol","Volúmenes","t","Volúmenes: anónimos, con nombre y montados","volumen volumenes volume -v persistir datos anonimo nombre montado bind mount host carpeta create ls rm inspect compartir",
+"Hacer que los **datos sobrevivan** al contenedor o compartir una carpeta de tu máquina con él.",
+[["que los datos no se pierdan al borrar el contenedor","volumen"],["crear / listar / borrar un volumen","docker volume create / ls / rm"],["compartir datos entre contenedores","el mismo volumen en varios"],["montar una carpeta o fichero de mi máquina","-v /ruta/host:/ruta/contenedor"],["volumen con nombre","-v vol1:/data"]],
+[["Anónimo","-v /data: se crea sin nombre; si nadie lo borra queda «parasitando»."],["Con nombre","docker volume create vol1 → -v vol1:/data. No se borra solo nunca."],["Montado","Ruta completa en el host : ruta completa en el contenedor."],["Ubicación","Los data volumes viven en /var/lib/docker/."]],
+"",
+[["Con nombre",`docker volume create vol1\ndocker run -ti -v vol1:/data go_example`,"Funciona en cualquier contenedor."],["Anónimo",`docker run -ti --rm -v /data go_example`,"Sin nombre: Docker le pone un identificador."],["Montado",`docker run -ti --rm -v /etc/hostname:/root/parent_name -v /opt/:/data go_example`,"Fichero o carpeta del host dentro del contenedor."],["Gestionar",`docker volume ls\ndocker volume inspect vol1\ndocker volume rm vol1`,"Para borrarlo, ningún contenedor puede usarlo."]],
+[],
+[["No puedo borrar el volumen","Está asociado a un contenedor: bórralo antes."],["Docker no limpia volúmenes","Nunca los elimina solos, ni al borrar el contenedor."]]);
+
+e("df","Dockerfile","t","Dockerfile: FROM, RUN, COPY, WORKDIR, ENV, EXPOSE, CMD y ENTRYPOINT","dockerfile from run copy add workdir env label user volume expose cmd entrypoint instruccion capa base imagen instalar copiar index.html alpine debian apk apt-get",
+"Escribir un **Dockerfile**: la receta de la imagen, instrucción por instrucción.",
+[["a partir de la imagen X","FROM X:tag (la primera)"],["instalar un paquete","RUN apt-get ... / RUN apk add ..."],["copiar el index.html a la imagen","COPY origen destino"],["directorio de trabajo","WORKDIR"],["variable de entorno","ENV"],["autor / versión","LABEL"],["comando al arrancar","CMD / ENTRYPOINT"],["puerto que escucha","EXPOSE (no publica)"]],
+[["FROM","Imagen base; obligatoria y la primera. Pon tag concreto, no latest."],["RUN","Ejecuta en una capa nueva; encadena con &&. Típico: instalar paquetes, compilar código, actualizar el SO."],["COPY / ADD","COPY copia del contexto (no admite ../). ADD además admite URL: se recomienda COPY. Destino con / final = directorio. Pasa archivos de la máquina donde construyes a la imagen."],["EXPOSE","Solo documenta; para publicar hace falta -p en docker run."],["CMD / ENTRYPOINT","CMD: solo cuenta el último. ENTRYPOINT se ejecuta primero y CMD pasa a ser sus parámetros (--entrypoint lo sustituye)."],["ENV","Define o cambia una variable de entorno. Escríbela ANTES de las instrucciones que dependan de ella. Sin espacios: ENV VAR=valor."],["LABEL / USER / WORKDIR","LABEL: metadatos (quién y cuándo creó la imagen). USER: quién ejecuta RUN y CMD. WORKDIR: directorio donde se ejecutan RUN, CMD, COPY… CMD se ejecuta en cada arranque, en formato lista."]],
+"",
+[["Alpine (nginx)",`FROM nginx:1.27-alpine\nRUN apk add --no-cache nano\nCOPY index.html /usr/share/nginx/html/index.html`,"apk add --no-cache, sin update previo."],["Debian (httpd)",`FROM httpd:2.4.62\nRUN apt-get update && \\\n    apt-get install -y curl && \\\n    rm -rf /var/lib/apt/lists/*\nCOPY index.html /usr/local/apache2/htdocs/index.html`,"update + install -y en el mismo RUN; limpiar las listas reduce el tamaño."],["Metadatos, usuario y arranque",`FROM ubuntu:22.04\nLABEL autor="Antoni"\nLABEL version="1.0"\nRUN apt-get update && apt-get install -y nginx\nENV miVariable=2\nWORKDIR /var/www/html\nEXPOSE 80\nCMD ["nginx", "-g", "daemon off;"]`,"CMD en formato lista y servidor en primer plano (daemon off)."],["ENTRYPOINT + CMD",`FROM ubuntu:22.04\nENTRYPOINT ["/bin/echo"]\nCMD ["Hello"]`,"docker run imagen → Hello. docker run imagen Adiós → Adiós sustituye a CMD."]],
+[["Usuario distinto en un RUN",`USER antoni\nRUN echo hola >> /tmp/hola.txt\nUSER root`],["Punto de montaje",`VOLUME /var/log`]],
+[["COPY sin destino","COPY necesita origen y destino."],["COPY ../algo","No permitido: solo archivos dentro del contexto."],["Varios CMD","Solo cuenta el último."],["Comillas tipográficas","Si copias del PDF, cambia las comillas por rectas (\")."],["daemon:off;","Los apuntes lo escriben así; lo correcto es «daemon off;»."]]);
+
+e("build","Dockerfile","t","docker build: opciones y buenas prácticas","docker build tag t file f no-cache pull quiet build-arg arg target contexto punto dockerignore fusionar run buenas practicas latest",
+"Construir la imagen con **docker build** y aplicar las buenas prácticas de los apuntes.",
+[["construye la imagen y llámala X","docker build -t X:tag ."],["con otro Dockerfile","-f"],["sin usar caché","--no-cache"],["forzar la descarga de la base","--pull"],["pasar una variable al construir","--build-arg + ARG"],["construir solo hasta una etapa","--target"],["excluir archivos del contexto",".dockerignore"],["el build da error de caché / parent snapshot not found","--no-cache"]],
+[["docker build [OPCIONES] PATH","El PATH (normalmente .) es el contexto: la carpeta con el Dockerfile y los archivos a copiar."],["-t","Etiqueta nombre:tag; sin -t la imagen queda huérfana. Se pueden poner varios."],["Caché","Si las instrucciones no cambian, reutiliza capas; --no-cache lo evita."],["--quiet","Solo muestra el ID de la imagen."]],
+"",
+[["Construir con nombre y tag",`docker build -t <usuari>/web-nginx:1.0 .`,"El punto final no se puede olvidar."],["Otro Dockerfile / sin caché",`docker build -f Dockerfile.dev -t <usuari>/web:dev .\ndocker build --no-cache --pull -t <usuari>/web:1.0 .`,"-f elige el archivo; --no-cache y --pull fuerzan reconstruir."],["Variable en la construcción",`ARG some_variable_name=default\nRUN echo "Valor: $some_variable_name"\n\ndocker build --build-arg some_variable_name=a_value .`,"ARG dentro del Dockerfile y --build-arg en la orden."]],
+[["Etiquetar la base y limpiar apt en el mismo RUN",`FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*`],[".dockerignore (archivo en el contexto)",`.git/\nnode_modules/\ndist/`]],
+[["docker build sin el punto","Falta el contexto: ... -t nombre:tag ."],["La imagen sale como <none>","No pusiste -t."],["La imagen no cambia","Caché: añade --no-cache."],["ERROR exporting to image / parent snapshot ... not found","Una capa CACHED ya no está en disco: docker build --no-cache. Si sigue, docker builder prune (fuera de los apuntes)."],["docker build -y","-y no existe en build (es de apt-get install -y): la etiqueta es -t."]]);
+
+e("multi","Dockerfile","t","Multi-stage build: varias etapas y una imagen final ligera","multi stage multistage build varios from as builder copy from target alpine peso imagen final reducir tamano etapa",
+"Reducir el peso de la imagen: **compilar en una etapa** y quedarse solo con el resultado en la última.",
+[["multi-stage / varias etapas","varios FROM en un mismo Dockerfile"],["copiar el resultado de la etapa anterior","COPY --from=builder"],["la imagen final debe ser alpine","el último FROM termina en -alpine"],["construir solo una etapa","docker build --target builder"]],
+[["Varios FROM","Cada FROM abre una etapa; el último FROM es la imagen final."],["AS nombre","Pone nombre a la etapa: FROM golang:1.11 AS builder."],["COPY --from=","Copia archivos de una etapa anterior (o de una imagen) a la actual."],["Resultado","En el ejemplo: de ~800 MB (golang) a ~100 MB (debian)."]],
+"",
+[["Sin multi-stage (pesa como golang)",`FROM golang:1.11\nWORKDIR /app\nCOPY main.go .\nRUN go build -o server .\nCMD ["./server"]`,"La imagen final lleva todo el compilador."],["Con multi-stage",`FROM golang:1.11 AS builder\nWORKDIR /app\nCOPY main.go .\nRUN go build -o server .\n\nFROM debian:stretch\nWORKDIR /app\nCOPY --from=builder /app .\nCMD ["./server"]`,"Solo la última etapa forma la imagen final."],["Construir solo una etapa",`docker build --target builder -t antoni/maven-stage .`,"Se detiene en la etapa indicada."]],
+[["Ejemplo Java (maven → openjdk alpine)",`FROM maven:3.6.2-ibmjava-8 AS builder\nCOPY app /app\nRUN cd /app && mvn package\n\nFROM openjdk:8-alpine\nCOPY --from=builder /app/target/ejecutable.jar /opt/ejecutable.jar\nCMD ["java", "-jar", "/opt/ejecutable.jar"]`]],
+[["Copio de la etapa equivocada","El nombre de --from debe coincidir con el AS."],["La imagen sigue pesando mucho","La final es la del último FROM: ponle una base ligera (alpine)."]]);
+
+e("alpine","Ejercicio","e","Ejercicios 1 y 4: imagen Alpine (nginx con nano / httpd con curl)","ejercicio 1 4 nginx 1.27 alpine nano web1 8081 httpd 2.4 alpine curl web4 8084 apk add web-nginx web-apache",
+"Imagen desde **nginx:1.27-alpine** con nano (ex1, web1, 8081) o desde **httpd:2.4-alpine** con curl (ex4, web4, 8084), sirviendo tu index.html.",
+[["a partir de nginx:1.27-alpine con nano","ex1 · <usuari>/web-nginx:1.0 · web1 · 8081"],["a partir de httpd:2.4-alpine con curl","ex4 · <usuari>/web-apache:2.0 · web4 · 8084"],["imagen terminada en -alpine","apk add --no-cache"]],
+[["Gestor","Alpine: apk add --no-cache PAQUETE (sin update previo)."],["Ruta","nginx: /usr/share/nginx/html/ · httpd: /usr/local/apache2/htdocs/."],["Puerto","Siempre -p PUERTO:80."]],
+`~/docker-imatges/ex1/\n├── Dockerfile\n└── index.html`,
+[["Dockerfile del ex1",`FROM nginx:1.27-alpine\nRUN apk add --no-cache nano\nCOPY index.html /usr/share/nginx/html/index.html`,"Base con tag exacto, instala nano y copia tu página."],["Construir",`docker build -t <usuari>/web-nginx:1.0 .`,"Sustituye <usuari> por tu usuario de Docker Hub."],["Arrancar",`docker run -d --name web1 -p 8081:80 <usuari>/web-nginx:1.0`,"8081 = tu máquina; 80 = contenedor."],["Comprobar",`curl http://localhost:8081\ndocker exec web1 nano --version`,"curl muestra tu página; exec comprueba el paquete. Si curl da «Connection reset by peer», espera 2-3 segundos y repite."]],
+[["Ejercicio 4: httpd Alpine con curl (web4, 8084)",`FROM httpd:2.4-alpine\nRUN apk add --no-cache curl\nCOPY index.html /usr/local/apache2/htdocs/index.html\n\ndocker build -t <usuari>/web-apache:2.0 .\ndocker run -d --name web4 -p 8084:80 <usuari>/web-apache:2.0\ncurl http://localhost:8084\ndocker exec web4 curl --version`]],
+[["apt-get en Alpine","Alpine usa apk add --no-cache."],["-p 8081:8081","El puerto interno es 80."],["Ruta de Apache en nginx","Cada servidor tiene su carpeta."],["ERROR exporting to image / parent snapshot","Capa CACHED rota: docker build --no-cache -t ... ."],["Usuario mal escrito en -t","Corrígelo con docker tag (rm -f del contenedor, tag, rmi, run)."]]);
+
+e("debian","Ejercicio","e","Ejercicios 2 y 3: imagen Debian (httpd con curl / nginx con nano)","ejercicio 2 3 httpd 2.4.62 curl web2 8082 nginx 1.26 nano web3 8083 apt-get update install debian web-apache web-nginx",
+"Imagen desde **httpd:2.4.62** con curl (ex2, web2, 8082) o desde **nginx:1.26** con nano (ex3, web3, 8083), sirviendo tu index.html.",
+[["a partir de httpd:2.4.62 con curl","ex2 · <usuari>/web-apache:1.0 · web2 · 8082"],["a partir de nginx:1.26 con nano","ex3 · <usuari>/web-nginx:2.0 · web3 · 8083"],["imagen sin -alpine (Debian)","apt-get update + apt-get install -y"]],
+[["Gestor","Debian: apt-get update && apt-get install -y PAQUETE en el MISMO RUN. El -y evita la pregunta."],["Limpieza","rm -rf /var/lib/apt/lists/* en el mismo RUN reduce el tamaño (no obligatorio)."],["Ruta","httpd: /usr/local/apache2/htdocs/ · nginx: /usr/share/nginx/html/."]],
+`~/docker-imatges/ex2/\n├── Dockerfile\n└── index.html`,
+[["Dockerfile del ex2",`FROM httpd:2.4.62\nRUN apt-get update && \\\n    apt-get install -y curl && \\\n    rm -rf /var/lib/apt/lists/*\nCOPY index.html /usr/local/apache2/htdocs/index.html`,"update + install -y + limpieza en un solo RUN."],["Construir y arrancar",`docker build -t <usuari>/web-apache:1.0 .\ndocker run -d --name web2 -p 8082:80 <usuari>/web-apache:1.0`,"Puerto interno 80."],["Comprobar",`curl http://localhost:8082\ndocker exec web2 curl --version`,"Página y paquete. Si curl da «Connection reset by peer», espera 2-3 segundos y repite."]],
+[["Ejercicio 3: nginx:1.26 con nano (web3, 8083)",`FROM nginx:1.26\nRUN apt-get update && \\\n    apt-get install -y nano && \\\n    rm -rf /var/lib/apt/lists/*\nCOPY index.html /usr/share/nginx/html/index.html\n\ndocker build -t <usuari>/web-nginx:2.0 .\ndocker run -d --name web3 -p 8083:80 <usuari>/web-nginx:2.0\ncurl http://localhost:8083\ndocker exec web3 nano --version`]],
+[["Falta -y","El build se queda esperando confirmación y falla."],["install sin update","Falta apt-get update antes."],["Ruta de nginx en httpd","Cada servidor tiene su carpeta."],["ERROR exporting to image / parent snapshot","Capa CACHED rota: docker build --no-cache -t ... ."],["Usuario mal escrito en -t","Corrígelo con docker tag (rm -f del contenedor, tag, rmi, run)."]]);
+
+e("python","Ejercicio","e","Imagen Python: ejecutar app.py e instalar requirements.txt","ejercicio python 3.15 app.py requirements.txt pip install librerias dependencias repo docker hub subir imagen cmd workdir",
+"Imagen desde **python:3.15** que ejecute **app.py** con las librerías de **requirements.txt**, y subirla a un repositorio de Docker Hub.",
+[["a partir de python:3.15","FROM python:3.15"],["instalar las librerías del requirements.txt","COPY requirements.txt + RUN pip install -r"],["ejecutar el fichero app.py","CMD [«python3», «app.py»]"],["crea un repo en Docker Hub y sube la imagen","repo en la web + docker push"]],
+[["pip install -r","Instala todo lo listado en requirements.txt."],["Orden de capas","Copia primero requirements.txt e instala; copia app.py después: la caché evita reinstalar si solo cambias app.py."],["Aviso","pip y python no salen en los apuntes; la plantilla usa solo instrucciones que sí salen (FROM, WORKDIR, COPY, RUN, CMD)."],["Repo","Créalo en hub.docker.com (Create repository) con el mismo nombre que la imagen: <usuari>/nombre."],["Ejemplo de clase","El del compañero usa oratge.py: ENV PYTHONUNBUFFERED=1 + WORKDIR /app + COPY requirements.txt . + RUN pip install -r + COPY oratge.py . + CMD [«python3», «oratge.py»]. Cambia el nombre del fichero por el del enunciado."],["PYTHONUNBUFFERED=1","Los resultados no se guardan en el buffer y salen progresivamente; el 1 equivale a True. Sin espacios alrededor del =."]],
+`ejercicio-python/\n├── Dockerfile\n├── app.py\n└── requirements.txt`,
+[["Dockerfile",`FROM python:3.15\nENV PYTHONUNBUFFERED=1\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY app.py .\nCMD ["python3", "app.py"]`,"Base exacta, ENV sin espacios (PYTHONUNBUFFERED=1: python no usa el buffer y la salida sale progresivamente), directorio de trabajo, dependencias y arranque."],["Construir y probar",`docker build -t <usuari>/app-python:1.0 .\ndocker run --rm <usuari>/app-python:1.0`,"--rm borra el contenedor al terminar."],["Subir a Docker Hub",`docker login\ndocker push <usuari>/app-python:1.0`,"Con el repositorio ya creado."]],
+[["Si app.py es un servidor web",`docker run -d --name app1 -p 8000:8000 <usuari>/app-python:1.0`]],
+[["No encuentra los ficheros","COPY sin destino: usa COPY requirements.txt . (con el punto)."],["denied al hacer push","La imagen no lleva tu usuario: docker tag origen <usuari>/nombre:tag."],["El tag no existe","Usa exactamente el tag del enunciado."],["ENV PYTHONUNBUFFERED = 1","Sin espacios entre la variable, el = y el valor: ENV PYTHONUNBUFFERED=1."]]);
+
+e("size","Ejercicio","e","Ejercicio 5: comparar tamaños y explicarlo en el README","ejercicio 5 tamano mida imagen mas pequena alpine musl busybox glibc debian readme docker images size explicar",
+"Comparar el tamaño de las **cuatro imágenes** y explicar en **README.md** cuál es la más pequeña y por qué.",
+[["compara el tamaño de las cuatro imágenes","docker images (columna SIZE)"],["¿cuál es la más pequeña y por qué?","las Alpine: web-nginx:1.0 y web-apache:2.0"]],
+[["Alpine","Linux mínimo para contenedores: usa musl en vez de glibc y BusyBox en vez de las herramientas GNU; solo lo imprescindible."],["Tamaños","Alpine: unas decenas de MB. Debian: unos 150–200 MB (varía según la versión)."],["apt-get","Añade la lista de paquetes si no se borra."]],
+"",
+[["Ver tamaños",`docker images`,"Mira SIZE de las cuatro."],["Texto para el README.md",`# Práctica Dockerfile 1\nNombre: NOMBRE APELLIDOS\n\n## Ejercicio 5\nLas imágenes más pequeñas son las basadas en Alpine (web-nginx:1.0 y web-apache:2.0). Alpine es una distribución Linux mínima pensada para contenedores: usa musl en lugar de glibc y BusyBox en lugar de las herramientas GNU, y solo incluye lo imprescindible. Debian incluye muchas más bibliotecas y utilidades, y apt-get añade la lista de paquetes si no se borra.`,"Reescríbelo con tus palabras e incluye tu nombre."]],
+[],
+[["README sin nombre","Debe llevar tu nombre y la respuesta."]]);
+
+e("hub","Docker Hub","t","Subir imágenes a Docker Hub: login, tag y push","docker hub login push tag subir imagen usuario repositorio denied requested access reetiquetar publicar registro",
+"**Publicar** las imágenes en tu cuenta de Docker Hub y comprobar que aparecen.",
+[["inicia sesión en Docker Hub","docker login"],["sube las cuatro imágenes","docker push <usuari>/nombre:tag"],["comprueba que aparecen","hub.docker.com/u/<usuari>"],["la imagen tiene el usuario mal / push denied","docker tag + docker rmi del nombre malo"]],
+[["Nombre","Para subir, la imagen DEBE llevar tu usuario delante: <usuari>/nombre:tag."],["docker tag","Reetiqueta una imagen existente sin reconstruirla."],["Aviso","login, push y tag no salen en los apuntes de Virtualización: solo en el PDF de ejercicios y en el solucionario."]],
+"",
+[["Iniciar sesión",`docker login`,"Muestra un código y un enlace: ábrelo en el navegador y escribe el código (según la versión, puede pedir usuario y contraseña o token). Siempre antes del push."],["Subir las cuatro",`docker push <usuari>/web-nginx:1.0\ndocker push <usuari>/web-apache:1.0\ndocker push <usuari>/web-nginx:2.0\ndocker push <usuari>/web-apache:2.0`,"Una orden por imagen y tag."],["Si la imagen no lleva tu usuario (o lo tiene mal escrito)",`docker images\ndocker rm -f web2\ndocker tag alvaro/web-apache:1.0 <usuari>/web-apache:1.0\ndocker rmi alvaro/web-apache:1.0\ndocker run -d --name web2 -p 8082:80 <usuari>/web-apache:1.0\ndocker ps`,"rm -f del contenedor que la usa; tag pone el nombre correcto sin reconstruir; rmi borra el nombre malo; ps debe mostrar el nombre bueno. Después ya puedes hacer push."]],
+[],
+[["denied: requested access to the resource is denied","La imagen no lleva tu usuario delante o falta el login: docker tag + docker login."],["No aparece en la web","Revisa usuario y tag exactos en hub.docker.com/u/<usuari>."]]);
+
+e("proceso","Compañero","t","Proceso completo: de la carpeta vacía a Docker Hub (apuntes del compañero)","proceso completo crear imagen mkdir cd nano dockerfile from run netcat apt install build login push image rm docker hub id companero apuntes clase paso a paso nginx",
+"El **flujo completo** que se vio en clase: carpeta, Dockerfile, build con tu id de Docker Hub, prueba y subida. Son apuntes de un compañero, cotejados con los de Virtualización.",
+[["crea una imagen con un Dockerfile y súbela","mkdir + nano Dockerfile + build + login + push"],["que el nombre facilite el docker push","docker build -t <usuari>/nombre:version ."],["instala netcat en la imagen","RUN apt update && apt install netcat-traditional -y"],["borra la imagen","docker image rm <usuari>/nombre:version"]],
+[["Sin versión","Si solo pones el nombre se descarga como latest (ubuntu = ubuntu:latest)."],["Punto final","El . del build es el directorio actual: ahí busca el Dockerfile y los archivos."],["Nombre con tu id","<usuari>/nombre:version: descriptivo y listo para el push."],["apt frente a apt-get","El ejemplo de clase usa apt update && apt install -y. Funciona, pero el solucionario usa apt-get (apt avisa de que no es estable en scripts)."],["login","Muestra un código y un enlace: ábrelo en el navegador y escribe el código."]],
+`~/nginx-netcat/\n└── Dockerfile`,
+[["Carpeta y Dockerfile",`mkdir nginx-netcat\ncd nginx-netcat\nnano Dockerfile`,"Dentro del Dockerfile van el FROM y el RUN."],["Contenido del Dockerfile",`FROM nginx:1.31.4\nRUN apt update && apt install netcat-traditional -y`,"Base con tag (el del ejemplo de clase) y una capa que instala el paquete; -y evita la confirmación."],["Construir con tu id",`docker build -t <usuari>/nginx-netcat:1.0 .`,"El punto final es el directorio actual."],["Probar",`docker run -d --name nc1 -p 8000:80 <usuari>/nginx-netcat:1.0\ndocker ps`,"El puerto de la derecha es el del contenedor (80)."],["Login y push",`docker login\ndocker push <usuari>/nginx-netcat:1.0`,"login da un código y un enlace; primero login y después push."],["Borrar lo que ya no necesitas",`docker rm -f nc1\ndocker image rm <usuari>/nginx-netcat:1.0`,"Mejor por ID (completo o parcial) que por nombre."]],
+[],
+[["Copio las comillas del PDF","Las comillas curvas dan error en el Dockerfile: escribe comillas rectas."],["docker exec con el nombre de la imagen","En esos apuntes pone «nombre imagen», pero exec se usa con el nombre o el ID del CONTENEDOR, que debe estar en marcha."]]);
+
+e("git","GitHub","t","Entrega en GitHub: repositorio practica-dockerfile-1","github git init add commit push remote origin branch main repositorio entrega readme gh repo create token auth public carpeta docker-imatges",
+"Entregar la práctica en **GitHub**: repo **practica-dockerfile-1** con ex1–ex4 y README.md.",
+[["crea un repositorio llamado practica-dockerfile-1","en GitHub o con gh repo create"],["súbelo a GitHub","git init, add, commit, branch -M main, remote add, push"],["debe contener ex1 a ex4 y README.md","toda la carpeta ~/docker-imatges"]],
+[["Estructura","README.md + ex1/ ex2/ ex3/ ex4/, cada una con Dockerfile e index.html."],["Del examen de Git","Repos públicos, rama main, nombres y mensajes de commit EXACTOS."],["gh","Con la CLI de GitHub se crea y se sube de una vez."]],
+"",
+[["Autenticación (si hace falta)",`git config --global user.name "Nom Cognom"\ngit config --global user.email "correu@exemple.com"\ngh auth login --with-token < auth.txt\ngh auth setup-git`,"Como en el examen de Git: token con permisos guardado en auth.txt."],["Subir con git",`cd ~/docker-imatges\ngit init\ngit add .\ngit commit -m "Pràctica Dockerfile 1"\ngit branch -M main\ngit remote add origin https://github.com/<usuari-github>/practica-dockerfile-1.git\ngit push -u origin main`,"Antes crea el repositorio vacío y público en GitHub."]],
+[["Con la CLI de GitHub (crea y sube a la vez)",`gh repo create practica-dockerfile-1 --public --source=. --push`]],
+[["push rechazado","El repo no existe o el nombre no es exacto: créalo antes."],["Falta el README.md","Debe llevar tu nombre y la respuesta del ejercicio 5."]]);
+
+e("gh-pasos","GitHub","t","Subir a GitHub paso a paso (desde cero, con token)","subir subirlo github git paso a paso desde cero token auth gh login identidad user name email init add commit branch main remote origin push repositorio vacio publico url set-url status log mensaje commit exacto carpeta entrega dockerfile readme autenticacion contraseña password denied not found rejected amend clone clonar enlazar",
+"Llevar una carpeta de tu ordenador a un repositorio de **GitHub**, en el orden correcto y comprobando cada paso. Es el mismo flujo del examen de Git: identidad → token → repo **vacío** en GitHub → init, add y commit → remoto → push.",
+[["súbelo a GitHub / sube el contenido al repositorio","git init → add → commit → branch -M main → remote add origin → push -u origin main"],["crea un repo en GitHub y configura el remote","repo VACÍO en la web + git remote add origin URL"],["el repositorio debe ser público y en la rama main","Public al crearlo + git branch -M main"],["haz un commit con el mensaje «…»","git commit -m \"…\" con el texto EXACTO del enunciado"],["añade solo el fichero X","git add X (no git add .) y luego commit"],["puja los Dockerfile a Github","la misma secuencia, dentro de la carpeta de los Dockerfile"]],
+[["Repositorio local y remoto","Tu carpeta con .git es el repositorio local. El de GitHub es el remoto: se enlazan con git remote add."],["origin","Nombre habitual del remoto. La URL es https://github.com/<usuario>/<repo>.git"],["Repo vacío","Al crearlo en GitHub NO marques README, .gitignore ni licencia, o el primer push se rechaza (lo avisa el examen de Git)."],["Token","GitHub no admite la contraseña de la cuenta en git push. Se usa un token con todos los permisos marcados (como en el examen), guardado en auth.txt."],["add, commit y push","add prepara los ficheros, commit guarda esa versión con su mensaje y push la sube a GitHub."],["-u","push -u origin main enlaza tu rama con la remota: la próxima vez basta con git push."],["main","Los exámenes exigen la rama main: git branch -M main la renombra."]],
+`~/docker-imatges/\n├── README.md\n├── ex1/  (Dockerfile, index.html)\n├── ex2/  (Dockerfile, index.html)\n├── ex3/  (Dockerfile, index.html)\n└── ex4/  (Dockerfile, index.html)`,
+[["Tu identidad en Git (una sola vez)",`git config --global user.name "Nom Cognom"\ngit config --global user.email "correu@exemple.com"\ngit config --global --list`,"Sin esto el commit falla con «Please tell me who you are»."],
+["Crea el token en GitHub y guárdalo en auth.txt",`# En github.com: tu foto > Settings > Developer settings > Personal access tokens\n# Genera un token con TODOS los permisos marcados y cópialo (solo se muestra una vez)\n# Guárdalo en un fichero FUERA de la carpeta que vas a subir:\ncd ~\nnano auth.txt`,"Los nombres de los menús pueden variar un poco. **auth.txt va en tu home (~), nunca dentro de la carpeta del repo**: con git add . subirías tu token a GitHub."],
+["Inicia sesión con el token",`gh auth login --with-token < auth.txt\ngh auth setup-git\ngh auth status`,"Así git push no te pide usuario ni contraseña. gh auth status confirma que estás dentro. Son las mismas órdenes del examen de Git."],
+["Crea el repositorio VACÍO en GitHub",`# En github.com: New repository > nombre EXACTO del enunciado > Public\n# NO marques «Add a README», «.gitignore» ni «license»\n# Alternativa por terminal (usa solo UNA de las dos formas):\n# gh repo create practica-dockerfile-1 --public`,"Con la web ves el nombre exacto; con gh sale en una línea. Si el nombre no coincide con el del enunciado, el apartado puede no corregirse."],
+["Entra en la carpeta y mira qué vas a subir",`cd ~/docker-imatges\nls`,"ls debe mostrar tus carpetas y ficheros. Git no sube carpetas vacías."],
+["Inicializa el repositorio",`git init\ngit status`,"Si ya existía sale «Reinitialized existing Git repository»: no es un error. git status muestra los ficheros todavía sin seguimiento."],
+["Añade los ficheros y comprueba",`git add .\ngit status`,"git add . añade TODO. Si el enunciado dice «añade solo X», usa git add X. Tras el add, git status los muestra listos para el commit."],
+["Haz el commit con el mensaje exacto",`git commit -m "Pràctica Dockerfile 1"`,"Copia el mensaje tal cual del enunciado, acentos incluidos. En esta práctica el solucionario usa «Pràctica Dockerfile 1»; en otros ejercicios, el que pida el enunciado."],
+["Pon la rama en main",`git branch -M main`,"Si git init creó master, esto la renombra. Va después del primer commit."],
+["Enlaza con el repositorio de GitHub",`git remote add origin https://github.com/<usuari-github>/practica-dockerfile-1.git\ngit remote -v`,"Sustituye <usuari-github> por TU usuario real, sin los < >. remote -v debe mostrar tu URL dos veces (fetch y push). Si dice «remote origin already exists», mira los errores de abajo."],
+["Sube",`git push -u origin main`,"La primera vez lleva -u. Si no hiciste gh auth setup-git te pedirá usuario y contraseña: la contraseña es el TOKEN, nunca la de tu cuenta (el profesor dijo que el token sirve para los dos campos)."],
+["Comprueba que está subido",`git status\ngit log --oneline\ngit remote -v`,"git status debe decir que tu rama está al día con origin/main y que no hay nada que confirmar. Abre el repo en el navegador: deben verse todas tus carpetas y ficheros. El examen de Git avisa de que el historial del repo es la evidencia que se corrige."]],
+[["**Todo de una vez con la CLI de GitHub** (sale en el solucionario): crea el repo y sube. Antes haz git init, git add . y git commit.",`gh repo create practica-dockerfile-1 --public --source=. --push`],
+["**El remoto tiene una URL equivocada** (por ejemplo quedó el texto de plantilla)",`git remote -v\ngit remote set-url origin https://github.com/<usuari-github>/practica-dockerfile-1.git\ngit remote -v`],
+["**Después del primer push cambias algo**",`git add .\ngit commit -m "Mensaje del cambio"\ngit push`],
+["**Subir solo un fichero** (como en el examen: «afegiu només index.html»)",`git add index.html\ngit commit -m "Afegeix pàgina principal"\ngit push`],
+["**Te equivocaste en el mensaje del último commit y aún NO has hecho push** (fuera de los apuntes)",`git commit --amend -m "Mensaje correcto"`],
+["**Subir los Dockerfile del ejercicio de Python** (otra carpeta, otro repositorio)",`cd ~/<carpeta-del-ejercicio-python>\ngit init\ngit add .\ngit commit -m "Mensaje del enunciado"\ngit branch -M main\ngit remote add origin https://github.com/<usuari-github>/<nombre-del-repo>.git\ngit push -u origin main`],
+["**Partir de un repo que ya existe en GitHub**",`git clone https://github.com/<usuari-github>/<nombre-del-repo>.git\ncd <nombre-del-repo>`]],
+[["Repository not found","El repo no existe, el usuario o el nombre de la URL están mal, o quedó el texto de plantilla (<usuari-github>) sin cambiar. Mira git remote -v y corrígelo con git remote set-url origin URL."],
+["Password authentication is not supported","Escribiste la contraseña de tu cuenta. Usa el token: gh auth login --with-token < auth.txt y gh auth setup-git."],
+["remote origin already exists","Ya hay un remoto guardado, quizá con una URL mala. No repitas remote add: usa git remote set-url origin URL."],
+["Solo se sube el README","Ejecutaste git add README.md y no git add . : git add X añade únicamente X. Revisa con git status antes del commit."],
+["src refspec main does not match any","Todavía no hay ningún commit o la rama no se llama main. Haz add + commit y luego git branch -M main."],
+["rejected / failed to push some refs","El repo de GitHub no estaba vacío (README o licencia al crearlo). Créalo vacío; si es nuevo, bórralo y vuelve a crearlo. (fuera de los apuntes)"],
+["Please tell me who you are","Falta git config --global user.name y user.email."],
+["fatal: not a git repository","Estás fuera de la carpeta o falta git init."],
+["Token subido al repositorio","auth.txt nunca dentro de la carpeta del repo. Si lo subiste por error, revoca ese token en GitHub y crea otro. (fuera de los apuntes)"],
+["Una carpeta no aparece en GitHub","Git no sube carpetas vacías: cada carpeta necesita al menos un fichero. (fuera de los apuntes)"],
+["main frente a master","Si el enunciado dice main y tu rama es master, ejecuta git branch -M main antes del push. El PDF de ramas y tags usa master, pero en el examen de GitHub todos los repos van en main."]]);
+
+e("compose","Proyecto","e","Proyecto: docker-compose (backend PHP, frontend Vue, MySQL y phpMyAdmin)","proyecto docker compose yml mysql_contenidor backend_contenidor frontend_contenidor adminMySQL_contenidor phpmyadmin wait-for-it depends_on volumen init.sql multi-stage alpine php vue npm run serve config.php red servicios up build",
+"Dockerizar el proyecto del profesor con **docker-compose.yml**: MySQL, backend, frontend y phpMyAdmin, cumpliendo cada punto del enunciado.",
+[["servicio MySQL con la imagen oficial","image: mysql + container_name: mysql_contenidor"],["crear las tablas nada más arrancar","./mysql-init:/docker-entrypoint-initdb.d"],["un volumen para no perder los datos","volumes: mysql_data:/var/lib/mysql"],["no arrancar hasta que MySQL esté listo","wait-for-it (+ depends_on)"],["se construye una imagen","build: ./backend (Dockerfile)"],["arrancará después del servicio X","depends_on"],["multi-stage con imagen final alpine","varios FROM; el último ...-alpine"],["administrar la base de datos","servicio phpmyadmin"]],
+[["⚠ Aviso","docker-compose, depends_on, healthcheck y redes NO se explican en los 4 PDF de Virtualización. Esta plantilla es conocimiento general: contrástala con lo que dio el profesor (clase o vídeo)."],["Red","Los servicios del mismo compose se ven por nombre: por eso en backend/config.php el host es 'mysql_contenidor'."],["Puertos","Backend 8000 · frontend 8080 · phpMyAdmin otro libre (8081:80)."],["Nombres","mysql_contenidor · backend_contenidor · frontend_contenidor · adminMySQL_contenidor."]],
+`proyecto/\n├── docker-compose.yml\n├── backend/   (Dockerfile, index.php, config.php, wait-for-it.sh)\n├── frontend/  (Dockerfile, src/ItemList.vue, package.json)\n└── mysql-init/ (init.sql)`,
+[["backend/config.php: host para Docker",`$host = 'mysql_contenidor';`,"En local es localhost; en Docker, el nombre del contenedor de MySQL."],["backend/Dockerfile (multi-stage, final alpine)",`FROM php:8.2-cli-alpine AS builder\nRUN docker-php-ext-install pdo pdo_mysql\n\nFROM php:8.2-cli-alpine\nCOPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions\nCOPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d\nRUN apk add --no-cache bash\nWORKDIR /app\nCOPY . .\nRUN chmod +x wait-for-it.sh\nEXPOSE 8000\nCMD ["php", "-S", "0.0.0.0:8000"]`,"Plantilla orientativa. wait-for-it.sh necesita bash (Alpine no lo trae) y permiso de ejecución."],["frontend/Dockerfile (multi-stage, final alpine)",`FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\n\nFROM node:20-alpine\nWORKDIR /app\nCOPY --from=builder /app .\nEXPOSE 8080\nCMD ["npm", "run", "serve"]`,"La etapa builder instala dependencias; la final solo copia el resultado."],["docker-compose.yml",`services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_contenidor
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: elementos
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+  backend:
+    build: ./backend
+    container_name: backend_contenidor
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    command: ["./wait-for-it.sh", "mysql_contenidor:3306", "--", "php", "-S", "0.0.0.0:8000"]
+
+  frontend:
+    build: ./frontend
+    container_name: frontend_contenidor
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    command: npm run serve
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: adminMySQL_contenidor
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql_contenidor
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:`,"Usuario y contraseña de MYSQL_* deben coincidir con los de backend/config.php. MySQL va primero, el volumen guarda los datos e init.sql crea las tablas."],["Levantar, comprobar y parar",`docker compose up -d --build\ndocker compose ps\ndocker compose logs backend\ndocker compose down`,"En versiones antiguas: docker-compose (con guion)."]],
+[["Healthcheck para esperar de verdad a MySQL",`mysql:\n  healthcheck:\n    test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]\n    interval: 5s\n    retries: 20\nbackend:\n  depends_on:\n    mysql:\n      condition: service_healthy`],["Probar en local sin Docker",`# backend/config.php → $host = 'localhost';\ncd backend && php -S localhost:8000\ncd frontend && npm install && npm run serve`],["Documentación (README.md)",`# Dockerización de la aplicación\n1. Requisitos\n2. Estructura del proyecto\n3. Dockerfile del backend (explicado)\n4. Dockerfile del frontend (explicado)\n5. docker-compose.yml: servicios, nombres, orden, volumen\n6. Cómo levantarlo: docker compose up -d --build\n7. URLs: localhost:8080 · localhost:8000 · localhost:8081`]],
+[["El backend no conecta con MySQL","El host de config.php debe ser mysql_contenidor (no localhost) y las credenciales, las de MYSQL_* del compose."],["init.sql no se ejecuta","Solo corre la PRIMERA vez (volumen vacío): docker compose down -v y vuelve a levantar."],["El backend no responde en el navegador","El servidor debe escuchar en 0.0.0.0:8000 (no localhost) y publicar 8000:8000."],["wait-for-it: not found o permission denied","Falta bash en Alpine o chmod +x wait-for-it.sh."],["Puerto ocupado","phpMyAdmin no puede usar el 8080 (frontend): usa 8081:80."]]);
+
+// ===== MOTOR =====
+const $=id=>document.getElementById(id);
+const E=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const B=s=>E(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+const cb=(c,l)=>{CD.push(c);return '<div class="cb"><pre>'+E(c)+'</pre><button type="button" class="cp" onclick="cop('+(CD.length-1)+',this)">'+(l||"Copiar")+'</button></div>'};
+const bt=(c,l)=>{CD.push(c);return '<button type="button" class="cp" onclick="cop('+(CD.length-1)+',this)">'+l+'</button>'};
+function fb(t){const a=document.createElement("textarea");a.value=t;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(x){}document.body.removeChild(a)}
+function cop(i,b){const t=CD[i],o=b.textContent;const ok=()=>{b.textContent="¡Copiado!";setTimeout(()=>{b.textContent=o},1400)};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok).catch(()=>{fb(t);ok()});else{fb(t);ok()}}
+const css=x=>x.s.map(s=>s[1]).join("\n\n");
+const pag=x=>'<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<title>Ejercicio</title>\n<style>\n'+css(x)+'\n</style>\n</head>\n<body>\n'+(x.h||"")+'\n</body>\n</html>';
+const tg=x=>'<span class="bg '+(x.ti=="t"?"ok":"ori")+'">'+(x.ti=="t"?"📘 Teoría":"🧪 Ejercicio")+" · "+E(x.u)+"</span>";
+function body(x){
+ let h='<div class="st">📌 ¿Qué me piden?</div><p>'+B(x.p)+'</p>';
+ h+='<div class="st">🔍 ¿Cómo lo reconozco?</div><ul>'+x.r.map(r=>'<li>«'+E(r[0])+'» → <b>'+E(r[1])+'</b></li>').join("")+'</ul>';
+ h+='<div class="st">🛠️ ¿Qué necesito y qué significa?</div><ul>'+x.n.map(r=>'<li><b>'+E(r[0])+'</b>: '+E(r[1])+'</li>').join("")+'</ul>';
+ if(x.h)h+='<div class="tip">📁 <b>Archivos de partida</b>:</div>'+cb(x.h);
+ h+='<div class="st">🧱 Paso a paso</div>'+x.s.map((s,k)=>'<div class="paso"><b class="n">'+(k+1)+'</b><b>'+E(s[0])+'</b>'+cb(s[1])+'<p>'+B(s[2])+'</p></div>').join("");
+ h+='<div class="st">💻 Todo junto</div>'+cb(css(x),"Copiar todo");
+ if(x.v.length)h+='<div class="st">⚡ Si el enunciado cambia</div>'+x.v.map(v=>'<div class="tip">'+B(v[0])+'</div>'+cb(v[1])).join("");
+ h+='<div class="st">⚠️ Errores típicos</div><ul class="warn">'+x.er.map(r=>'<li><b>'+E(r[0])+'</b>. '+E(r[1])+'</li>').join("")+'</ul>';
+ return h}
+// buscador inteligente
+const N=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+const SW=new Set("el la los las un una unos unas de del al en para por con sin que y o se su sus como cual donde cuando hacer este esta quiero poner pide enunciado".split(" "));
+const stem=t=>t.length>7&&t.endsWith("mente")?t.slice(0,-5):t.length>=7?t.slice(0,-2):t.length>=5?t.slice(0,-1):t;
+const ini=(tx,st)=>(" "+tx).includes(" "+st);
+const tok=q=>{const r=N(q).split(" ").filter(Boolean);const f=r.filter(t=>(t.length>2||/^\d+$/.test(t))&&!SW.has(t));return f.length?f:r};
+P.forEach(x=>{x.nk=N(x.k).split(" ");x.nt=N(x.t);x.nx=N(x.p+" "+x.r.join(" ")+" "+x.n.join(" "));x.nc=N(x.s.map(s=>s[0]+" "+s[1]).join(" "))});
+function score(x,tk,q){let s=0;if(q.length>3){if(x.nt.includes(q))s+=15;if(x.nx.includes(q))s+=8}
+ for(const t of tk){const st=stem(t);let kw=0;for(const k of x.nk){if(k===t)kw=5;else if(k.length>2&&ini(k,st)&&kw<3)kw=3}
+  s+=kw;if(ini(x.nt,st))s+=3;if(ini(x.nx,st))s+=2;if(ini(x.nc,st))s+=1}
+ return s}
+const R=$("res"),I=$("sq");
+function tog(h){const b=h.nextElementSibling,x=P[+h.dataset.i];const o=b.classList.toggle("open");if(o&&!b.dataset.f){b.dataset.f=1;b.innerHTML=body(x)}h.querySelector(".ar").textContent=o?"▲":"▼"}
+function res(q){const nq=N(q);if(!nq){R.innerHTML="";return}
+ const tk=tok(q);const r=P.map((x,i)=>({x,i,s:score(x,tk,nq)})).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).slice(0,6);
+ if(!r.length){R.innerHTML='<div class="no">No encuentro nada para «<b>'+E(q)+'</b>». Prueba con otra palabra: centrar, flex, sticky, margen, sombra…</div>';return}
+ R.innerHTML=r.map((o,n)=>'<div class="rc"><div class="rh" data-i="'+o.i+'"><div class="sn">#'+(n+1)+'</div><div class="ri"><div class="rt">'+E(o.x.t)+'</div><div class="rm">'+tg(o.x)+'</div></div><div class="ar">▼</div></div><div class="rb"></div></div>').join("");
+ tog(R.querySelector(".rh"))}
+R.addEventListener("click",ev=>{const h=ev.target.closest(".rh");if(h)tog(h)});
+let tm;I.addEventListener("input",()=>{clearTimeout(tm);tm=setTimeout(()=>res(I.value),120)});
+$("sx").addEventListener("click",()=>{I.value="";res("");I.focus()});
+const SG=["Imagen con nginx alpine","Instalar un paquete","Publicar en un puerto","Subir a Docker Hub","Subir a GitHub","Subir a GitHub paso a paso","docker-compose del proyecto","Volumen para no perder datos","Multi-stage build","Error de caché al construir","curl falla tras el run","Usuario mal en la imagen","Crear y subir una imagen paso a paso"];
+$("sg").innerHTML='<span class="sl">Prueba:</span>'+SG.map(s=>'<button type="button" class="sb">'+E(s)+'</button>').join("");
+$("sg").addEventListener("click",ev=>{const b=ev.target.closest(".sb");if(b){I.value=b.textContent;res(b.textContent)}});
+// lista de temas, índice, tabla, errores
+const L=$("lista");
+P.forEach((x,i)=>{const d=document.createElement("details");d.id="p"+i;
+ d.innerHTML='<summary>'+(i+1)+'. '+E(x.t)+'</summary>'+tg(x)+'<div class="bd"></div>';
+ d.addEventListener("toggle",()=>{if(d.open&&!d.dataset.f){d.dataset.f=1;d.querySelector(".bd").innerHTML=body(x)}});L.appendChild(d)});
+function ab(i){const d=$("p"+i);d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"})}
+document.addEventListener("click",ev=>{const a=ev.target.closest("a[data-o]");if(a){ev.preventDefault();ab(+a.dataset.o)}});
+$("idx").innerHTML="<ol>"+P.map((x,i)=>'<li data-p="'+i+'"><a href="#p'+i+'" data-o="'+i+'">'+E(x.t)+'</a> <small>('+E(x.u)+')</small></li>').join("")+"</ol>";
+const TB=$("tb");P.forEach((x,i)=>x.r.forEach(r=>{const tr=document.createElement("tr");tr.dataset.t=N(r[0]+" "+r[1]);tr.dataset.p=i;tr.innerHTML='<td>'+E(r[0])+'</td><td><b>'+E(r[1])+'</b></td><td><a href="#p'+i+'" data-o="'+i+'">'+(i+1)+'</a></td>';TB.appendChild(tr)}));
+$("eb").innerHTML='<ul class="warn"><li><b>El build falla</b>: lee la última línea roja; casi siempre es un nombre, un tag o una ruta mal escritos.</li><li><b>El contenedor no responde</b>: docker ps -a, docker logs NOMBRE y revisa el -p host:80.</li><li><b>Nombre en uso</b>: docker rm -f NOMBRE y vuelve a lanzarlo.</li></ul>'+P.map((x,i)=>'<p><a href="#p'+i+'" data-o="'+i+'"><b>'+E(x.t)+'</b></a></p><ul class="warn">'+x.er.map(r=>'<li><b>'+E(r[0])+'</b>. '+E(r[1])+'</li>').join("")+'</ul>').join("");
+// ===== buscador de teoría (el de abajo) =====
+P.forEach(x=>{x.bl=N([x.t,x.k,x.u,x.p,x.r.join(" "),x.n.join(" "),x.h,x.s.join(" "),x.v.join(" "),x.er.join(" ")].join(" "))});
+const ci=P.findIndex(x=>x.id=="examen");
+const cf=P.findIndex(x=>x.id=="fallos");
+$("cent").innerHTML='🎯 <b>Antes de empezar:</b> un nombre mal escrito puede dejarte el apartado a cero. <a href="#p'+ci+'" data-o="'+ci+'">Checklist del examen</a> · <a href="#p'+cf+'" data-o="'+cf+'">Tus fallos reales y cómo arreglarlos</a>.';
+const Q=$("q");let cs="";
+const CH=[["Todos",""],["📘 Teoría","t"],["🧪 Ejercicios","e"]].concat([...new Set(P.filter(x=>x.ti=="t").map(x=>x.u))].map(u=>[u,u]));
+$("chips").innerHTML=CH.map(c=>'<button type="button" class="chip'+(c[1]===""?" on":"")+'" data-c="'+E(c[1])+'">'+E(c[0])+'</button>').join("");
+const pass=x=>!cs||(cs=="t"&&x.ti=="t")||(cs=="e"&&x.ti=="e")||x.u==cs;
+function filtrar(go){
+ const nq=N(Q.value),tk=nq?tok(Q.value):[];let n=0,first=null;
+ document.querySelectorAll("li.hit").forEach(l=>l.classList.remove("hit"));
+ P.forEach((x,i)=>{const d=$("p"+i);const ok=pass(x)&&(!nq||tk.every(t=>ini(x.bl,stem(t))));
+  d.classList.toggle("hide",!ok);
+  const li=document.querySelector('#idx li[data-p="'+i+'"]');if(li)li.classList.toggle("hide",!ok);
+  if(ok)n++;
+  if(ok&&nq){if(!d.dataset.f){d.dataset.f=1;d.querySelector(".bd").innerHTML=body(x)}d.open=true;
+   d.querySelectorAll("li").forEach(l=>{const tx=N(l.textContent);if(tk.some(t=>ini(tx,stem(t))))l.classList.add("hit")});
+   if(!first)first=d}
+  else if(!nq)d.open=false});
+ document.querySelectorAll("#tb tr[data-p]").forEach(tr=>{const x=P[+tr.dataset.p];tr.classList.toggle("hide",!(pass(x)&&(!nq||tk.every(t=>ini(tr.dataset.t,stem(t))))))});
+ $("cnt").textContent=(nq||cs)?n+" de "+P.length+" temas coinciden":"";
+ if(go&&first)first.scrollIntoView({block:"start"})}
+let t2;Q.addEventListener("input",()=>{clearTimeout(t2);t2=setTimeout(()=>filtrar(true),200)});
+$("chips").addEventListener("click",ev=>{const b=ev.target.closest(".chip");if(!b)return;cs=b.dataset.c;document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b));filtrar(false)});
+</script>
+</body></html>
